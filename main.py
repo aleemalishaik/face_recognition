@@ -10,17 +10,19 @@ from pathlib import Path
 from database import SessionLocal, engine, get_db
 from models import FaceEmbedding, User  # ✅ Import User model
 from fastapi.responses import JSONResponse
+from config import settings  # ✅ Imported settings
 
 app = FastAPI()
 
-# Allow requests from React frontend (localhost:3000)
+# ✅ CORS Setup using settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Allow only frontend origin
+    allow_origins=[settings.frontend_origin],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],  # Allow required methods
-    allow_headers=["Authorization", "Content-Type"],  # Allow required headers
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
+
 
 # Create database tables
 from models import Base
@@ -82,7 +84,7 @@ async def recognize_face(file: UploadFile = File(...), db: Session = Depends(get
 
     return JSONResponse(status_code=401, content={"error": "Face not recognized!"})
 
-FACE_STORAGE_DIR = Path(r"D:/attendance/faces")  # Set directory for storing images
+FACE_STORAGE_DIR = Path(settings.face_storage_dir)  # Set directory for storing images
 FACE_STORAGE_DIR.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
 
 @app.post("/update_face/")
